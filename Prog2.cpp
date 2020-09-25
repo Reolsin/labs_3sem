@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../Project1/Astroid.h"
+#include "../Lib/Astroid.h"
 #define pi 3.14159265359
 
 int main(int argc, char* argv[])
@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 	char** s;
 	while (fl1) {
 		s = curve.formuls();
-		std::cout << "Your Astrioid is: " << s[0] << "\nOR\n" << s[1] << std::endl;
+		std::cout << "Astrioid formuls:\nXY coordinate system: " << s[0] << ";\nParametric form: " << s[1] << std::endl;
 		delete[] s[0]; delete[] s[1];
 		std::cout << "getC: " << curve.getC().x << curve.getC().y << std::endl;
 		std::cout << "getR: " << curve.getR() << std::endl;
@@ -20,6 +20,9 @@ int main(int argc, char* argv[])
 		std::cout << "Length to the t = 2*pi: " << curve.length(2 * pi) << std::endl;
 		std::cout << "Length to the t = pi/2: " << curve.length(pi / 2) << std::endl;
 		std::cout << "Length to the t = -pi: " << curve.length(-pi) << std::endl;
+		std::cout << "Curvature radius to the t = 2*pi: " << curve.curvature_radius(pi / 2) << std::endl;
+		std::cout << "Curvature radius to the t = pi/2: " << curve.curvature_radius(7 * pi) << std::endl;
+		std::cout << "Curvature radius to the t = -pi: " << curve.curvature_radius(-1) << std::endl;
 		int fl2 = 1;
 		while (fl2) {
 			std::cout << "Enter x for calculate value y(x) or precc ctrl+Z to quit:" << std::endl;
