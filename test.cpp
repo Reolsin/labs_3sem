@@ -27,6 +27,10 @@ TEST(Constructor, InitConstructor)
 	ASSERT_EQ(2, a3.getC().x);
 	ASSERT_EQ(4, a3.getC().y);
 	ASSERT_EQ(4, a3.getR());
+	p.x = 5;
+	ASSERT_EQ(2, a3.getC().x);
+	ASSERT_EQ(4, a3.getC().y);
+	ASSERT_EQ(4, a3.getR());
 }
 
 TEST(Constructor, TestException)
