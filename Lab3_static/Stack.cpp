@@ -22,13 +22,13 @@ namespace Stack_static {
 
 	Stack::Stack(Cell c[], int n) : top(0)
 	{
-		if (n <= SZ) {
+		if ((0 < n) && (n <= SZ)) {
 			for (; top < n; top++) {
 				a[top].v = c[top].v;
 				strcpy_s(a[top].str, c[top].str);
 			}
 		}
-		else throw std::exception("Too many rows to write!");
+		else throw std::exception("Int parametr is out of range!");
 	}
 
 	Stack& Stack::operator+=(const Cell& c)
