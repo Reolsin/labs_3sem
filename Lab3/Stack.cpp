@@ -1,89 +1,61 @@
 #include "Stack.h"
 #include <iostream>
 
-namespace Lab3_s {
+namespace Stack_static {
 
-	bool string_is_correct(const char* str, int len)
+	bool Cell::string_is_correct(const char* s)
 	{
 		int i = 0;
-		while ((*str != '\0') && (i++ < len + 1))
-			str++;
-		if (*str)
+		while ((*s != '\0') && (i++ < len + 1))
+			s++;
+		if (*s)
 			return false;
 		return true;
 	}
 
-	int Stack::push(const double v, const char str[len + 1])
+	Cell::Cell(double d, const char s[len + 1] = "") : v(d), str("")
 	{
-		if (top < SZ)
-			if (string_is_correct(str, len)) {
-				a[top].v = v;
-				strcpy_s(a[top++].str, str);
+		if (string_is_correct(s))
+			strcpy_s(str, s);
+		else throw std::exception("Failed to add string to structure!");
+	}
+
+	Stack::Stack(Cell c[], int n) : top(0)
+	{
+		if (n <= SZ) {
+			for (; top < n; top++) {
+				a[top].v = c[top].v;
+				strcpy_s(a[top].str, c[top].str);
 			}
-			else
-				throw std::exception("Input string is without null terminator or too long!");
-		else
-			throw std::exception("Stack overflow!");
-		return top;
-	}
-	
-	int Stack::push(const Cell& el)
-	{
-		if (top < SZ) {
-			a[top].v = el.v;
-			strcpy_s(a[top++].str, el.str);
 		}
-		else
-			throw std::exception("Stack overflow!");
-		return top;
+		else throw std::exception("Too many rows to write!");
 	}
 
-	int Stack::pop(Cell& el)
+	Stack& Stack::operator+=(const Cell& c)
 	{
-		int rc = top - 1;
-		if (top > 0) {
-			el.v = a[--top].v;
-			strcpy_s(el.str, a[top].str);
+		if (not_full()) {
+			a[top].v = c.v;
+			strcpy_s(a[top++].str, c.str);
 		}
-		return rc;
-	}
-	
-	Stack& Stack::copy(const Stack& st)
-	{
-		Stack tmp(st);
-		Cell el;
-		while (tmp.pop(el) >= 0)
-			push(el);
+		else throw std::exception("Stack overflow!");
 		return *this;
 	}
 
-	Stack& Stack::move(Stack& st)
+	Stack& Stack::operator()(Cell& c)
 	{
-		Cell el;
-		while (st.pop(el) >= 0)
-			push(el);
+		if (not_empty()) {
+			c.v = a[--top].v;
+			strcpy_s(c.str, a[top].str);
+		}
+		else
+			throw std::exception("Stack empty!");
 		return *this;
 	}
 
-	int Stack::Status()
-	{
-		if (!top) {
-			std::cout << "Stack is empty." << std::endl;
-			return -1;
-		}
-		if (top < SZ) { 
-			std::cout << "Stack is partially filled." << std::endl;
-			return 1;
-		}
-		else {
-			std::cout << "Stack is full." << std::endl;
-			return 0;
-		}
-	}
 	std::istream& operator>>(std::istream& s, Cell& c)
 	{
 		double v;
-		char str[11];
+		char str[c.len+1];
 		s >> v; s.get();
 		s.getline(str, c.len + 1);
 		if (s.good()) {
@@ -99,7 +71,7 @@ namespace Lab3_s {
 	{
 		Cell tmp;
 		s >> tmp;
-		st.push(tmp);
+		st += tmp;
 		return s;
 	}
 
