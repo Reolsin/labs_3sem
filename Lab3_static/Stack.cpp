@@ -13,7 +13,7 @@ namespace Stack_static {
 		return true;
 	}
 
-	Cell::Cell(double d = 0, const char s[len + 1] = "") : v(d), str("")
+	Cell::Cell(double d, const char s[len + 1]) : v(d)
 	{
 		if (string_is_correct(s))
 			strcpy_s(str, s);
