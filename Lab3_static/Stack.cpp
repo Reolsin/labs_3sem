@@ -13,42 +13,34 @@ namespace Stack_static {
 		return true;
 	}
 
-	Cell::Cell(double d, const char s[len + 1] = "") : v(d), str("")
+	Cell::Cell(double d = 0, const char s[len + 1] = "") : v(d), str("")
 	{
 		if (string_is_correct(s))
 			strcpy_s(str, s);
 		else throw std::exception("Failed to add string to structure!");
 	}
 
-	Stack::Stack(Cell c[], int n) : top(0)
+	Stack::Stack(const Cell c[], int n) : top(0)
 	{
-		if ((0 < n) && (n <= SZ)) {
-			for (; top < n; top++) {
-				a[top].v = c[top].v;
-				strcpy_s(a[top].str, c[top].str);
-			}
-		}
+		if ((0 < n) && (n <= SZ))
+			for (; top < n; top++)
+				a[top] = c[top];
 		else throw std::exception("Int parametr is out of range!");
 	}
 
 	Stack& Stack::operator+=(const Cell& c)
 	{
-		if (not_full()) {
-			a[top].v = c.v;
-			strcpy_s(a[top++].str, c.str);
-		}
+		if (top < SZ)
+			a[top++] = c;
 		else throw std::exception("Stack overflow!");
 		return *this;
 	}
 
 	Stack& Stack::operator()(Cell& c)
 	{
-		if (not_empty()) {
-			c.v = a[--top].v;
-			strcpy_s(c.str, a[top].str);
-		}
-		else
-			throw std::exception("Stack empty!");
+		if (top > 0)
+			c = a[--top];
+		else throw std::exception("Stack is empty!");
 		return *this;
 	}
 
@@ -58,12 +50,9 @@ namespace Stack_static {
 		char str[c.len+1];
 		s >> v; s.get();
 		s.getline(str, c.len + 1);
-		if (s.good()) {
-			c.v = v;
-			strcpy_s(c.str, str);
-		}
-		else
-			throw std::exception("Failed to enter structure!");
+		if (s.good())
+			c = { v, str };
+		else throw std::exception("Failed to create structure!");
 		return s;
 	}
 
@@ -83,12 +72,13 @@ namespace Stack_static {
 
 	std::ostream& operator<<(std::ostream& s, const Stack& st)
 	{
-		s << "Stack status|";
+		s << "Stack status >> ";
 		if (st.top == 0)
-			s << "empty|";
-		else
-			for (int i = st.top - 1; i >= 0; --i)
-				s << st.a[i] << '|';
+			s << "empty";
+		else {
+			for (int i = st.top - 1; i > 0; --i)
+				s << st.a[i] << '|'; s << st.a[0];
+		}
 		return s;
 	}
 }
