@@ -1,5 +1,4 @@
 #include "Stack.h"
-#include <iostream>
 
 namespace Stack_static {
 
@@ -22,9 +21,9 @@ namespace Stack_static {
 
 	Stack::Stack(const Cell c[], int n) : top(0)
 	{
-		if ((0 < n) && (n <= SZ))
-			for (; top < n; top++)
-				a[top] = c[top];
+		if ((0 <= n) && (n <= SZ))
+			while(top < n)
+				a[top] = c[top++];
 		else throw std::exception("Int parametr is out of range!");
 	}
 
