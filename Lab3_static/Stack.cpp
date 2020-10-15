@@ -29,7 +29,7 @@ namespace Stack_static {
 
 	Stack& Stack::operator+=(const Cell& c)
 	{
-		if (top < SZ)
+		if (not_full())
 			a[top++] = c;
 		else throw std::exception("Stack overflow!");
 		return *this;
@@ -37,7 +37,7 @@ namespace Stack_static {
 
 	Stack& Stack::operator()(Cell& c)
 	{
-		if (top > 0)
+		if (not_empty())
 			c = a[--top];
 		else throw std::exception("Stack is empty!");
 		return *this;
@@ -50,7 +50,7 @@ namespace Stack_static {
 		s >> v; s.get();
 		s.getline(str, c.len + 1);
 		if (s.good())
-			c = { v, str };
+			c = Cell(v, str);
 		else throw std::exception("Failed to create structure!");
 		return s;
 	}
