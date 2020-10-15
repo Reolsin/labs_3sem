@@ -1,5 +1,5 @@
-#ifndef _STACK_H_
-#define _STACK_H_
+#ifndef _STACK_H_ST_
+#define _STACK_H_ST_
 #include <iostream>
 
 namespace Stack_static {
@@ -9,7 +9,7 @@ namespace Stack_static {
 		static const int len = 10;
 		double v;
 		char str[len+1];
-		Cell(double d = 0, const char s[len+1] = "");
+		Cell(double d = 0, const char s[len + 1] = "");
 
 		friend std::istream& operator>>(std::istream&, Cell&);
 		friend std::ostream& operator<<(std::ostream&, const Cell&);
@@ -38,4 +38,5 @@ namespace Stack_static {
 		friend std::ostream& operator<<(std::ostream&, const Stack&);
 	};
 }
+
 #endif
