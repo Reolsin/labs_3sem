@@ -29,8 +29,8 @@ namespace Stack_static {
 		Stack& operator+=(const Cell&);
 		Stack& operator()(Cell&);
 
-		inline bool not_empty() const { if (top > 0) return true; return false; }
-		inline bool not_full() const { if (top < SZ) return true; return false; }
+		inline bool not_empty() const { return top > 0; }
+		inline bool not_full() const { return top < SZ; }
 		inline int getSZ() const { return SZ; }
 		inline int gettop() const { return top; }
 
