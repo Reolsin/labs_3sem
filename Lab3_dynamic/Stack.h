@@ -54,5 +54,4 @@ namespace Stack_dynamic {
 		T tmp = a1; a1 = a2; a2 = tmp;
 	}
 }
-
 #endif
