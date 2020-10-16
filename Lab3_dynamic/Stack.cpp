@@ -11,14 +11,8 @@ namespace Stack_dynamic {
 
 	Cell::Cell(double d, const char* s) : v(d)
 	{
-		if (s) {
-			str = new char[strlen(s) + 1];
-			copy(str, s);
-		}
-		else {
-			str = new char[1];
-			str[0] = '\0';
-		}
+		str = new char[strlen(s) + 1];
+		copy(str, s);
 	}
 
 	Cell::Cell(const Cell& c) : v(c.v), str(c.str)
@@ -30,6 +24,8 @@ namespace Stack_dynamic {
 	Cell& Cell::operator=(const Cell& c)
 	{
 		v = c.v;
+		delete[] str;
+		str = new char[strlen(c.str) + 1];
 		copy(str, c.str);
 		return *this;
 	}
@@ -53,8 +49,10 @@ namespace Stack_dynamic {
 		if (n >= 0) {
 			SZ = (1 + n / Q) * Q;
 			a = new Cell[SZ];
-			while (top < n)
-				a[top] = c[top++];
+			while (top < n) {
+				a[top] = c[top];
+				top++;
+			}
 		}
 		else throw std::exception("Second parametr cant be negative");
 	}
