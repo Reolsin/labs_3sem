@@ -1,5 +1,20 @@
 #include "../Library_dynamic/Stack.h"
 
+int getint(std::istream& s)
+{
+	int n;
+	const char* err = "";
+	do {
+		std::cout << err;
+		err = "Error. Enter number.\n";
+		s.clear();
+		s.ignore(s.rdbuf()->in_avail());
+		s >> n;
+	} while (!s.good());
+	s.get();
+	return n;
+}
+
 int dialog(const char* msgs[], int N)
 {
 	int rc;
@@ -7,7 +22,7 @@ int dialog(const char* msgs[], int N)
 		system("cls");
 		for (int i = 0; i < N; i++)
 			std::cout << msgs[i] << std::endl;
-		std::cin >> rc; std::cin.ignore(1);
+		rc = getint(std::cin);
 	} while (!std::cin.good());
 	return rc;
 }
@@ -56,6 +71,5 @@ int main()
 		}
 		std::cout << "Type any symbol to continue..."; std::cin.get();
 	}
-
 	return 0;
 }
