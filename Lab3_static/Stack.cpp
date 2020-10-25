@@ -5,9 +5,9 @@ namespace Stack_static {
 	bool Cell::string_is_correct(const char* s)
 	{
 		int i = 0;
-		while ((*s != '\0') && (i++ < len + 1))
+		while ((*(s) != '\0') && (i++ < len + 1))
 			s++;
-		if (*s)
+		if (*(s))
 			return false;
 		return true;
 	}
