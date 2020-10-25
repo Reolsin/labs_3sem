@@ -81,3 +81,4 @@ namespace Stack_static {
 		return s;
 	}
 }
+//Nursultan Aldabergenov B19-565
