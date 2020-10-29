@@ -15,6 +15,17 @@ int getint(std::istream& s)
 	return n;
 }
 
+int getindex_in_range(int start, int end) {
+	int i;
+	const char* msg = "";
+	do {
+		std::cout << msg;
+		i = getint(std::cin);
+		msg = "Error out of range\n";
+	} while ((i < start) || (i > end));
+	return i;
+}
+
 int dialog(const char* msgs[], int N)
 {
 	int rc;
@@ -31,6 +42,7 @@ int main()
 {
 	const char* msgs[] = { "0.Quit", "1.Pop", "2.Push", "3.Status", "4.Get SZ", "5.Get top", "6.Print" };
 	int rc;
+	int n;
 	Stack_dynamic::Stack S;
 	Stack_dynamic::Cell c;
 	while (rc = dialog(msgs, 7)) {
@@ -43,13 +55,18 @@ int main()
 			catch (std::exception& e) { std::cout << e.what() << std::endl; }
 			break;
 		case 2:
-			try {
-				std::cin >> S;
-			}
-			catch (std::exception& e) {
-				std::cout << e.what() << std::endl;
-				std::cin.clear();
-				std::cin.ignore(std::cin.rdbuf()->in_avail());
+			std::cout << "Enter number of cells to add:" << std::endl;
+			n = getindex_in_range(0, INT_MAX);
+			for (int i = 0; i < n; i++) {
+				try {
+					std::cin >> S;
+				}
+				catch (std::exception& e) {
+					std::cout << e.what() << std::endl;
+					std::cin.clear();
+					std::cin.ignore(std::cin.rdbuf()->in_avail());
+					i--;
+				}
 			}
 			break;
 		case 3:
