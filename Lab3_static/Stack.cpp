@@ -21,7 +21,7 @@ namespace Stack_static {
 
 	Stack::Stack(const Cell c[], int n) : top(0)
 	{
-		if ((0 <= n) && (n <= SZ))
+		if ((n>=0) && (n <= SZ))
 			while(top < n)
 				a[top] = c[top++];
 		else throw std::exception("Int parametr is out of range!");
