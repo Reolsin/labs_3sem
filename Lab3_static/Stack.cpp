@@ -76,7 +76,8 @@ namespace Stack_static {
 			s << "empty";
 		else {
 			for (int i = st.top - 1; i > 0; --i)
-				s << st.a[i] << '|'; s << st.a[0];
+				s << st.a[i] << '|'; 
+				s << st.a[0];
 		}
 		return s;
 	}
