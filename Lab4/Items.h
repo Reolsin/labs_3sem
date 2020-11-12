@@ -28,7 +28,6 @@ namespace Gamma {
 
 	class aidkit : public Item {
 	private:
-
 		int heal_amount, cur_charges, full_charges;
 	protected:
 		virtual int Item_id() { return 1; };
