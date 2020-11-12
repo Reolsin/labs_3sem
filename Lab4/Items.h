@@ -18,7 +18,6 @@ namespace Gamma {
 
 	class weapon : public Item {
 	private:
-		int id;
 		int ammo_type, damage, full_ammo, cur_ammo, RP;
 	protected:
 		virtual int Item_id() { return 0; };
@@ -29,7 +28,7 @@ namespace Gamma {
 
 	class aidkit : public Item {
 	private:
-		int id;
+
 		int heal_amount, cur_charges, full_charges;
 	protected:
 		virtual int Item_id() { return 1; };
@@ -40,7 +39,6 @@ namespace Gamma {
 
 	class ammunition : public Item {
 	private:
-		int id;
 		int ammo_type, cur_count, full_count;
 	protected:
 		virtual int Item_id() { return 2; };
