@@ -19,7 +19,7 @@ namespace Gamma {
 
 	class weapon {
 	private:
-		const char name[10];
+		const char name;
 		int Weight, UP;
 		int ammo_type, damage, full_ammo, cur_ammo, RP;
 	public:
@@ -28,7 +28,7 @@ namespace Gamma {
 
 	class aidkit {
 	private:
-		const char name[10];
+		const char name;
 		int Weight, UP;
 		int heal, cur_charges, full_charges;
 	public:
@@ -37,7 +37,7 @@ namespace Gamma {
 
 	class ammunition {
 	private:
-		const char name[10];
+		const char name;
 		int Weight, UP;
 		int ammo_type, cur_count, full_count;
 	public:
