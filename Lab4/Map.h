@@ -1,15 +1,22 @@
 #pragma once
-#include <iostream>
-#include "Units.h"
+#include "classes.h"
 
 namespace Gamma {
 
+	struct Cell {
+		std::vector<Item*> Items;
+		char type;
+		bool add_item(Item*);
+	};
+
 	class GameField {
 	private:
-		int h, l;
-		Unit* player[3];
-		Unit* enemy[3];
-		Item** items;
+		const int h, l;
+		std::vector<Unit*> player;
+		std::vector<Unit*> enemy;
+		std::vector<std::vector<Cell>> Map;
 	public:
+		GameField();
+		GameField(std::ifstream);
 	};
 }
