@@ -1,48 +1,53 @@
 #pragma once
-#include <iostream>
-#include "Units.h"
+#include "classes.h"
 
 namespace Gamma {
 
 	class Item {
+	protected:
 		const char name;
 		int weight, use_points;
-		int x, y;
-	protected:
-		virtual int Item_id() = 0;
-		virtual bool use() = 0;
 	public:
-		void set_x_y(int,int);
-		
+		Item();
+		Item(char, int, int);
+		int UP() const;
+
+		virtual bool use(Operative*) = 0;
 	};
 
 	class weapon : public Item {
 	private:
-		int ammo_type, damage, full_ammo, cur_ammo, RP;
-	protected:
-		virtual int Item_id() { return 0; };
-		virtual bool use(Unit&);
+		int cur_clip_ammo, cur_ammo, 
+			full_clip_ammo, full_ammo, 
+			damage, reload_points;
+		double ammo_type;
 	public:
+		weapon();
+		weapon(int, int, int, int, double);
 		
+		double deal_damage();
+		int change_ammo(int, double);
+		virtual bool use(Operative*);
 	};
 
 	class aidkit : public Item {
 	private:
-		int heal_amount, cur_charges, full_charges;
-	protected:
-		virtual int Item_id() { return 1; };
-		virtual bool use(Unit&);
+		int heal_amount, charges;
 	public:
+		aidkit();
+		aidkit(int, int);
 
+		virtual bool use(Operative*);
 	};
 
 	class ammunition : public Item {
 	private:
-		int ammo_type, cur_count, full_count;
-	protected:
-		virtual int Item_id() { return 2; };
-		virtual bool use(Operative&);
+		int cur_count, full_count;
+		double ammo_type;
 	public:
+		ammunition();
+		ammunition(int, double);
 
+		virtual bool use(Operative*);
 	};
 }
