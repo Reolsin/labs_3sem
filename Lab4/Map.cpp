@@ -1,6 +1,7 @@
 #include "classes.h"
 
 using namespace Gamma;
+
 GameField::GameField() : h(19), l(80)
 {
 	for (int i = 0; i < 3; i++)
