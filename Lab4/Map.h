@@ -9,6 +9,7 @@ namespace Gamma {
 		bool add_item(Item*);
 	};
 
+
 	class GameField {
 	private:
 		const int h, l;
@@ -18,5 +19,6 @@ namespace Gamma {
 	public:
 		GameField();
 		GameField(std::ifstream);
+		~GameField() {}
 	};
 }
