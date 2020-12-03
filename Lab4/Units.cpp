@@ -1,11 +1,11 @@
-#include "classes.h"
+#include "Units.h"
+#include "Items.h"
 
 using namespace Gamma;
 
-
 Backpack::Backpack(std::vector<char> binds) : weight(0), num(0)
 {
-	for (int i = 0; i < binds.size(); i++)
+	for (size_t i = 0; i < binds.size(); i++)
 		Items[binds[i]] = nullptr;
 }
 
@@ -35,15 +35,7 @@ Item* Backpack::drop_item(char bind)
 	return item;
 }
 
-void Backpack::delete_item(char bind)
-{
-	num--;
-	weight -= Items[bind]->w();
-	delete Items[bind];
-	Items[bind] = nullptr;
-}
-
-inline Item* Backpack::choose_item(char bind) const
+inline Item* Backpack::operator[](char bind) const
 {
 	return Items.at(bind);
 }
@@ -55,28 +47,40 @@ Operative::Operative(std::vector<char> binds, weapon* g, double ac, int f_w, std
 bool Operative::attack(Unit* unit)
 {
 	if (check_MP(gun->up())) {
-		int n;
+		double n;
 		if (n = gun->deal_damage()) {
 			change_MP(gun->up());
-			unit->change_HP(-(accuracy * n));
+			unit->change_HP((int)-(accuracy * n));
 			return true;
 		}
 	}
 	return false;
 }
 
+Item* Operative::drop_item(char bind)
+{
+	return backpack.drop_item(bind);
+}
+
+bool Operative::take_item(Item* item)
+{
+	if (full_weight >= (backpack.w() + item->w()))
+		return backpack.put_item(item);
+	return false;
+}
+
 bool Operative::use_item(char bind)
 {
-	Item* item = backpack.choose_item(bind);
+	Item* item = backpack[bind];
 	if (item) {
 		return item->use(this);
 	}
 	return false;
 }
 
-int Operative::change_ammo(int cur_ammo, double ammo_type)
+int Operative::load_ammo(int cur_ammo, double ammo_type)
 {
-	return gun->change_ammo(cur_ammo, ammo_type);
+	return gun->reload(cur_ammo, ammo_type);
 }
 
 bool Operative::change_weapon(weapon* gun2)
@@ -86,8 +90,19 @@ bool Operative::change_weapon(weapon* gun2)
 }
 
 
-Unit::Unit(std::string n, int x_, int y_, int hp, int mp, int r, int move) :
-	name(n), x(x_), y(y_), cur_HP(hp), full_HP(hp), cur_MP(mp), full_MP(mp), vision(r), move_points(move) {}
+Unit::Unit(std::string n, int x, int y, int hp, int mp, int r, int move) :
+	name(n), position(x,y), cur_HP(hp), full_HP(hp), cur_MP(mp), full_MP(mp), vision(r), move_points(move) {}
+
+bool Unit::move(const Point& p)
+{
+	if (cur_MP >= move_points) 
+	{
+		cur_MP -= move_points;
+		position = p;
+		return true;
+	}
+	return false;
+}
 
 int Unit::change_HP(int HP)
 {
@@ -106,7 +121,7 @@ inline bool Unit::check_MP(int MP) const
 	return cur_MP >= MP; 
 }
 
-inline bool Unit::is_alive() const 
+bool Unit::is_alive() const 
 { 
 	return cur_HP > 0; 
 }
@@ -119,7 +134,7 @@ bool Alien_melee::attack(Unit* unit)
 {
 	if (check_MP(attack_points)) {
 		change_MP(attack_points);
-		unit->change_HP(-(accuracy * damage));
+		unit->change_HP((int)-(accuracy * damage));
 		return true;
 	}
 	return false;
@@ -132,10 +147,10 @@ Alien_range::Alien_range(weapon* g, double ac, std::string n, int x, int y, int 
 bool Alien_range::attack(Unit* unit)
 {
 	if (check_MP(gun->up())) {
-		int n;
+		double n;
 		if (n = gun->deal_damage()) {
 			change_MP(gun->up());
-			unit->change_HP(-(accuracy * n));
+			unit->change_HP((int)-(accuracy * n));
 			return true;
 		}
 	}
