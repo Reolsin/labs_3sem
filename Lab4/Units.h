@@ -3,18 +3,25 @@
 
 namespace Gamma {
 
+	struct Point {
+		int x, y;
+		Point(int x_ = 0, int y_ = 0) : x(x_), y(y_) {}
+		Point& operator+=(const Point& p) { x += p.x; y += p.y; }
+	};
+
 	class Backpack {
 	private:
-		int weight, num;
+		int weight;
+		size_t num;
 		std::map<char, Item*> Items;
 	public:
 		Backpack(std::vector<char> binds = { 'q','w','e','r' });
 		~Backpack() {}
 
+		int w() const { return weight; }
 		bool put_item(Item*);
 		Item* drop_item(char);
-		void delete_item(char);
-		inline Item* choose_item(char bind) const;
+		inline Item* operator[](char bind) const;
 	};
 
 
@@ -25,16 +32,21 @@ namespace Gamma {
 		const int full_HP, full_MP,
 			vision,
 			move_points;
-		int x, y;
+		Point position;
 	public:
-		Unit() : name("noname"), x(), y(), cur_HP(), full_HP(), cur_MP(), full_MP(), vision(), move_points() {}
+		Unit() : name("noname"), position(), cur_HP(), full_HP(), cur_MP(), full_MP(), vision(), move_points() {}
 		Unit(std::string n, int x_ = -1, int y_ = -1, int hp = 100, int mp = 100, int r = 5, int move = 20);
 		~Unit() {}
 
+		bool move(const Point&);
+		Point get_pos() const { return position; }
+
 		int change_HP(int);
-		inline void change_MP(int);
-		inline bool check_MP(int) const;
-		inline bool is_alive() const;
+		void change_MP(int);
+		bool check_MP(int) const;
+		bool is_alive() const;
+
+		virtual bool attack(Unit*) = 0;
 	};
 
 
@@ -50,10 +62,12 @@ namespace Gamma {
 			std::string n, int x = -1, int y = -1, int hp = 100, int mp = 100, int r = 5, int move = 20);
 		~Operative() { delete gun; }
 
-		bool attack(Unit*);
+		virtual bool attack(Unit*);
 
+		Item* drop_item(char bind);
+		bool take_item(Item*);
 		bool use_item(char bind);
-		int change_ammo(int, double);
+		int load_ammo(int, double);
 		bool change_weapon(weapon*);
 	};
 
@@ -69,7 +83,7 @@ namespace Gamma {
 			std::string n, int x = -1, int y = -1, int hp = 100, int mp = 100, int r = 5, int move = 20);
 		~Alien_melee() {}
 
-		bool attack(Unit*);
+		virtual bool attack(Unit*);
 	};
 
 
@@ -82,7 +96,7 @@ namespace Gamma {
 		Alien_range(weapon* g, double ac, std::string n, int x = -1, int y = -1, int hp = 100, int mp = 100, int r = 5, int move = 20);
 		~Alien_range() { delete gun; }
 
-		bool attack(Unit*);
+		virtual bool attack(Unit*);
 	};
 
 
@@ -94,5 +108,6 @@ namespace Gamma {
 		Alien_friendly(std::string n, int x = -1, int y = -1, int hp = 100, int mp = 100, int r = 5, int move = 20);
 		~Alien_friendly() {}
 
+		virtual bool attack(Unit*) { return false; }
 	};
 }
