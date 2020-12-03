@@ -1,5 +1,6 @@
 #pragma once
 #include "classes.h"
+#include "Units.h"
 
 namespace Gamma {
 
@@ -12,8 +13,8 @@ namespace Gamma {
 		Item(std::string, int, int);
 		~Item() {}
 
-		inline int up() const;
-		inline int w() const;
+		inline int up() const { return use_points; }
+		inline int w() const { return weight; }
 
 		virtual bool use(Operative*) = 0;
 	};
@@ -21,17 +22,17 @@ namespace Gamma {
 
 	class weapon : public Item {
 	private:
-		int cur_clip_ammo, cur_ammo,
-			full_clip_ammo, full_ammo,
+		int cur_clip_ammo,
+			full_clip_ammo,
 			damage, reload_points;
 		double ammo_type;
 	public:
-		weapon() : Item(), cur_ammo(), cur_clip_ammo(), full_ammo(), full_clip_ammo(), damage(), reload_points(), ammo_type() {}
+		weapon() : Item(), cur_clip_ammo(), full_clip_ammo(), damage(), reload_points(), ammo_type() {}
 		weapon(std::string n, int w, int up, int f_clip_ammo, int f_ammo, int d, int rp, double a_type);
 		~weapon() {}
 
 		double deal_damage();
-		int change_ammo(int, double);
+		int reload(int, double);
 		virtual bool use(Operative*);
 	};
 
