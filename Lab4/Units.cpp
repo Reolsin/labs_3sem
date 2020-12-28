@@ -89,6 +89,57 @@ inline Item* Backpack::operator[](int n) const
 }
 
 
+Unit::Unit(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move) :
+	name(n), model('0'), position(x, y), cur_HP(cur_hp), full_HP(hp), cur_MP(cur_mp), full_MP(mp), vision_(r), move_points(move) {}
+
+Unit::Unit(std::ifstream& file) { file >> name >> model >> position.x >> position.y >> cur_HP >> full_HP >> cur_MP >> full_MP >> vision_ >> move_points; }
+
+std::ofstream& Unit::save(std::ofstream& ofile) const
+{ 
+	ofile << name << ' ' << model << ' ' << position.x << ' ' << position.y 
+		<< ' ' << cur_HP << ' ' << full_HP << ' ' << cur_MP << ' ' << full_MP << ' ' << vision_ << ' ' << move_points << ' ';
+	return ofile; 
+}
+
+std::ostream& Unit::display(std::ostream& os) const
+{
+	return os << "HP: " << cur_HP << '/' << full_HP << ", MP: " << cur_MP << '/' << full_MP << ", Points per 1 move: " << move_points << '\n';
+}
+
+bool Unit::move(const Point& p)
+{
+	if (cur_MP >= move_points) 
+	{
+		cur_MP -= move_points;
+		position = p;
+		return true;
+	}
+	return false;
+}
+
+int Unit::change_HP(int HP)
+{
+	int n = (HP > full_HP - cur_HP) ? full_HP - cur_HP : HP;
+	cur_HP += n;
+	return n;
+}
+
+inline void Unit::change_MP(int use_points) 
+{ 
+	cur_MP -= use_points; 
+}
+
+inline bool Unit::check_MP(int MP) const 
+{ 
+	return cur_MP >= MP; 
+}
+
+bool Unit::is_alive() const 
+{ 
+	return cur_HP > 0; 
+}
+
+
 Operative::Operative(const Unit& unit, weapon* g, double ac, int f_w, Backpack&& bp) :
 	Unit(unit), gun(g), accuracy(ac), full_weight(f_w) { backpack = std::move(bp); }
 
@@ -185,57 +236,6 @@ bool Operative::change_weapon(weapon* gun2)
 {
 	std::swap(*gun, *gun2);
 	return true;
-}
-
-
-Unit::Unit(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move) :
-	name(n), model('0'), position(x, y), cur_HP(cur_hp), full_HP(hp), cur_MP(cur_mp), full_MP(mp), vision_(r), move_points(move) {}
-
-Unit::Unit(std::ifstream& file) { file >> name >> model >> position.x >> position.y >> cur_HP >> full_HP >> cur_MP >> full_MP >> vision_ >> move_points; }
-
-std::ofstream& Unit::save(std::ofstream& ofile) const
-{ 
-	ofile << name << ' ' << model << ' ' << position.x << ' ' << position.y 
-		<< ' ' << cur_HP << ' ' << full_HP << ' ' << cur_MP << ' ' << full_MP << ' ' << vision_ << ' ' << move_points << ' ';
-	return ofile; 
-}
-
-std::ostream& Unit::display(std::ostream& os) const
-{
-	return os << "HP: " << cur_HP << '/' << full_HP << ", MP: " << cur_MP << '/' << full_MP << ", Points per 1 move: " << move_points << '\n';
-}
-
-bool Unit::move(const Point& p)
-{
-	if (cur_MP >= move_points) 
-	{
-		cur_MP -= move_points;
-		position = p;
-		return true;
-	}
-	return false;
-}
-
-int Unit::change_HP(int HP)
-{
-	int n = (HP > full_HP - cur_HP) ? full_HP - cur_HP : HP;
-	cur_HP += n;
-	return n;
-}
-
-inline void Unit::change_MP(int use_points) 
-{ 
-	cur_MP -= use_points; 
-}
-
-inline bool Unit::check_MP(int MP) const 
-{ 
-	return cur_MP >= MP; 
-}
-
-bool Unit::is_alive() const 
-{ 
-	return cur_HP > 0; 
 }
 
 
