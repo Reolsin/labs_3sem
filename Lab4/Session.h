@@ -1,6 +1,7 @@
 #pragma once
 #include "classes.h"
 #include "Units.h"
+#include "Items.h"
 
 namespace Gamma {
 
@@ -9,27 +10,34 @@ namespace Gamma {
 		char cell_type;
 
 		Cell() : cell_type('.') {}
+		~Cell();
 
 		bool add_item(Item*);
-		Item* pick_up(int);
 	};
 
-	struct GameLevel {
+	class GameLevel {
 		std::vector<std::vector<Cell>> Map;
 		int h, l;
-
-		GameLevel();
+	protected:
+		std::ofstream& save(std::ofstream&) const;
+	public:
+		GameLevel(int l_ = 100, int h_ = 100);
 		GameLevel(std::ifstream&);
 
-		std::vector<Item*>& get_items(const Point& p);
+		std::vector<Item*>* get_items(const Point& p);
 		bool add_item(Item*, int, int);
 		bool add_item(Item* item, const Point& p);
-		Item* pick_up(int, int, int);
-		Item* pick_up(const Point&, int);
-		bool point_access(const Point&);
+		Cell& operator[](const Point&);
+
+		bool point_access(int, int) const;
+		bool point_on_map(double, double) const;
+		bool is_transparent(double, double) const;
+		std::vector<std::vector<char>> render_vision(const Unit*, const GameSession*) const;
+
+		friend std::ofstream& operator<<(std::ofstream& ofile, const GameLevel& level) { return level.save(ofile); }
 	};
 
-	enum mode { gamemode, inventorymode, attackmode, takemode };
+	enum class mode { game, inventory, attack, take, loot };
 	struct operation_code {
 		int code;
 		mode m;
@@ -43,17 +51,23 @@ namespace Gamma {
 	class GameSession {
 	private:
 		static std::map<operation_code, bool (Gamma::GameSession::*)(), CompareType> operation;
-
-		int current_unit;
-		Point attack_cursor;
-		std::vector<Operative*> player;
-		std::vector<Unit*> enemy;
+		int con_len;
+		std::string message;
 
 		GameLevel level;
 
-		std::string message;
+		Operative* current_unit;
+		int current_unit_num;
+		Point attack_cursor;
+		std::vector<std::vector<char>> unit_vision;
+		std::vector<Item*>* displayed_items;
+		int displayed_items_num;
+
+		std::vector<Operative*> player;
+		std::vector<Unit*> enemy;
+
 		mode current_mode;
-		
+
 		void move(const Point&);
 		bool move_up();
 		bool move_down();
@@ -65,14 +79,14 @@ namespace Gamma {
 		bool inventory_init();
 		bool inventory_drop();
 		bool inventory_activate();
-		bool inventory_left();
-		bool inventory_right();
-
 		bool take_init();
 		bool take_activate();
-		bool take_choose_left();
-		bool take_choose_right();
+		bool loot_init();
+		bool loot_activate();
+		bool table_choose_up();
+		bool table_choose_down();
 
+		void attack_cursor_move(const Point&);
 		bool attack_init();
 		bool attack_activate();
 		bool attack_cursor_up();
@@ -84,11 +98,13 @@ namespace Gamma {
 		bool next_turn();
 		bool exit();
 
-		bool not_unit_here(const Point&);
+		Unit* unit_here(const Unit* unit) const;
 	public:
-		GameSession() : current_unit(0), attack_cursor(), current_mode(gamemode) {}
-		GameSession(std::ifstream&) : current_unit(0), current_mode(gamemode) {}
-		~GameSession() {}
+		GameSession() : con_len(160), current_unit_num(0), current_unit(nullptr), displayed_items_num(0), displayed_items(nullptr), attack_cursor(), current_mode(mode::game), level() {}
+		GameSession(std::ifstream&);
+		~GameSession();
+
+		Unit* unit_here(const Point&) const;
 
 		bool execute(int button)
 		{
@@ -96,10 +112,10 @@ namespace Gamma {
 				return (this->*operation.at({ button, current_mode }))();
 			return true;
 		}
-		bool check();
+		bool check() const;
 
-		void draw() {}
+		void draw() const;
 
-		bool save(std::ofstream);
+		bool save(std::ofstream&);
 	};
 }
