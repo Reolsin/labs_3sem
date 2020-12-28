@@ -2,16 +2,17 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <string>
 #include <fstream>
-#include "Units.h"
-#include "Items.h"
-#include "Map.h"
-
+#include "conio.h"
+#include "windows.h"
 
 namespace Gamma {
 
-	class GameField;
-	class Cell;
+	class GameSession;
+	class GameLevel;
+	struct Cell;
+	struct Point;
 
 	class Unit;
 	class Operative;
