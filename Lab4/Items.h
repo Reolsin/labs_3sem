@@ -5,18 +5,24 @@
 namespace Gamma {
 
 	class Item {
-	protected:
+	private:
 		std::string name;
 		int weight, use_points;
-	public:
+	protected:
 		Item() : name("noname"), weight(), use_points() {}
 		Item(std::string, int, int);
-		~Item() {}
+		Item(std::ifstream&);
 
+		virtual std::ostream& display(std::ostream&) const;
+		virtual std::ofstream& save(std::ofstream&) const;
+	public:
 		inline int up() const { return use_points; }
 		inline int w() const { return weight; }
 
 		virtual bool use(Operative*) = 0;
+
+		friend std::ofstream& operator<<(std::ofstream& ofile, const Item& item) { return item.save(ofile); }
+		friend std::ostream& operator<<(std::ostream& os, const Item& item) { return item.display(os); }
 	};
 
 
@@ -26,13 +32,17 @@ namespace Gamma {
 			full_clip_ammo,
 			damage, reload_points;
 		double ammo_type;
+	protected:
+		virtual std::ostream& display(std::ostream&) const;
+		virtual std::ofstream& save(std::ofstream&) const;
 	public:
 		weapon() : Item(), cur_clip_ammo(), full_clip_ammo(), damage(), reload_points(), ammo_type() {}
-		weapon(std::string n, int w, int up, int f_clip_ammo, int f_ammo, int d, int rp, double a_type);
-		~weapon() {}
+		weapon(std::string n, int w, int up, int cur, int full, int d, int rp, double a_type);
+		weapon(std::ifstream&);
 
 		double deal_damage();
 		int reload(int, double);
+
 		virtual bool use(Operative*);
 	};
 
@@ -40,10 +50,13 @@ namespace Gamma {
 	class aidkit : public Item {
 	private:
 		int heal_amount, charges, full_charges;
+	protected:
+		virtual std::ostream& display(std::ostream&) const;
+		virtual std::ofstream& save(std::ofstream&) const;
 	public:
 		aidkit() : Item(), heal_amount(), charges(), full_charges() {}
-		aidkit(std::string n, int w, int up, int heal, int chrgs);
-		~aidkit() {}
+		aidkit(std::string n, int w, int up, int cur, int ful, int heal);
+		aidkit(std::ifstream&);
 
 		virtual bool use(Operative*);
 	};
@@ -53,10 +66,13 @@ namespace Gamma {
 	private:
 		int cur_count, full_count;
 		double ammo_type;
+	protected:
+		virtual std::ostream& display(std::ostream&) const;
+		virtual std::ofstream& save(std::ofstream&) const;
 	public:
 		ammunition() : Item(), cur_count(), full_count(), ammo_type() {}
-		ammunition(std::string n, int w, int up, int count, double a_type);
-		~ammunition() {}
+		ammunition(std::string n, int w, int up, int cur, int ful, double a_type);
+		ammunition(std::ifstream&);
 
 		virtual bool use(Operative*);
 	};
