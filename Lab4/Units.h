@@ -34,7 +34,6 @@ namespace Gamma {
 		friend std::ofstream& operator<<(std::ofstream& ofile, const Backpack& bp) { return bp.save(ofile); }
 	};
 
-
 	class Unit {
 	private:
 		std::string name;
@@ -49,9 +48,6 @@ namespace Gamma {
 		Unit(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move);
 		Unit(std::ifstream&);
 
-		virtual bool attack(Unit*) = 0;
-		virtual bool attack(Cell&) = 0;
-		virtual bool gun_check() const = 0;
 		virtual std::ostream& display(std::ostream&) const;
 		virtual std::ofstream& save(std::ofstream&) const;
 	public:
@@ -61,12 +57,15 @@ namespace Gamma {
 
 		inline void refresh() { cur_MP = full_MP; }
 		int change_HP(int);
-		void change_MP(int);
-		bool check_MP(int) const;
-		bool is_alive() const;
+		void change_MP(int use_points);
+		bool check_MP(int MP) const;
+		inline bool is_alive() const { return cur_HP > 0; }
 		inline std::string name_() const { return name; }
 		inline char avatar() const { return model; }
 
+		virtual const std::string* attack(Unit*) = 0;
+		virtual const std::string* attack(Cell&) = 0;
+		virtual bool gun_check() const = 0;
 		virtual std::vector<Item*>* get_items() = 0;
 		friend std::ostream& operator<<(std::ostream& ofile, const Unit& unit) { return unit.display(ofile); }
 		friend std::ofstream& operator<<(std::ofstream& ofile, const Unit& unit) { return unit.save(ofile); }
@@ -90,12 +89,12 @@ namespace Gamma {
 
 		Item* drop_item(int);
 		bool take_item(Item*);
-		bool use_item(int);
+		const std::string* use_item(int);
 		int load_ammo(int, double);
-		bool change_weapon(weapon*);
+		const std::string* change_weapon(weapon*);
 
-		virtual bool attack(Unit*);
-		virtual bool attack(Cell&);
+		virtual const std::string* attack(Unit*);
+		virtual const std::string* attack(Cell&);
 		virtual std::vector<Item*>* get_items();
 		virtual bool gun_check() const { return gun != nullptr; }
 	};
@@ -114,8 +113,8 @@ namespace Gamma {
 		Alien_melee(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move, int d, int ap, double ac);
 		Alien_melee(std::ifstream&);
 
-		virtual bool attack(Unit*);
-		virtual bool attack(Cell&);
+		virtual const std::string* attack(Unit*);
+		virtual const std::string* attack(Cell&);
 		virtual std::vector<Item*>* get_items() { return nullptr; }
 		virtual bool gun_check() const { return damage != 0; }
 	};
@@ -134,8 +133,8 @@ namespace Gamma {
 		Alien_range(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move, weapon*, double ac);
 		Alien_range(std::ifstream&);
 
-		virtual bool attack(Unit*);
-		virtual bool attack(Cell&);
+		virtual const std::string* attack(Unit*);
+		virtual const std::string* attack(Cell&);
 		virtual std::vector<Item*>* get_items() { return nullptr; }
 		virtual bool gun_check() const { return gun != nullptr; }
 	};
@@ -154,8 +153,8 @@ namespace Gamma {
 		Alien_friendly(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move, int full_weight, Backpack&&);
 		Alien_friendly(std::ifstream&);
 
-		virtual bool attack(Unit*) { return false; }
-		virtual bool attack(Cell&) { return false; }
+		virtual const std::string* attack(Unit*) { return msgs + 17; }
+		virtual const std::string* attack(Cell&) { return msgs + 17; }
 		virtual std::vector<Item*>* get_items();
 		virtual bool gun_check() const { return false; }
 	};
