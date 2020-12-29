@@ -26,7 +26,6 @@ namespace Gamma {
 
 		std::vector<Item*>* get_items(const Point& p);
 		bool add_item(Item*, int, int);
-		bool add_item(Item* item, const Point& p);
 		Cell& operator[](const Point&);
 
 		bool point_access(int, int) const;
@@ -52,7 +51,7 @@ namespace Gamma {
 	private:
 		static std::map<operation_code, bool (Gamma::GameSession::*)(), CompareType> operation;
 		int con_len;
-		std::string message;
+		const std::string* message;
 
 		GameLevel level;
 
@@ -98,13 +97,13 @@ namespace Gamma {
 		bool next_turn();
 		bool exit();
 
-		Unit* unit_here(const Unit* unit) const;
 	public:
-		GameSession() : con_len(160), current_unit_num(0), current_unit(nullptr), displayed_items_num(0), displayed_items(nullptr), attack_cursor(), current_mode(mode::game), level() {}
+		GameSession() : con_len(160), message(close_mods), current_unit_num(0), current_unit(nullptr), displayed_items_num(0), displayed_items(nullptr), attack_cursor(), current_mode(mode::game), level() {}
 		GameSession(std::ifstream&);
 		~GameSession();
 
 		Unit* unit_here(const Point&) const;
+		bool current_unit_is_alive() const { return current_unit->is_alive(); }
 
 		bool execute(int button)
 		{
