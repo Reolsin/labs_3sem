@@ -16,15 +16,14 @@ Backpack& Backpack::operator=(Backpack&& bp) noexcept
 
 Backpack::Backpack(std::ifstream& file)
 {
-	std::string tmp;
-	file >> tmp;
-	if (tmp == "-")
+	int num_items;
+	file >> num_items;
+	if (num_items == 0)
 		*this = Backpack();
 	else {
-		int n = std::stoi(tmp);
 		std::string item_type;
-		*this = Backpack(n);
-		for (int i = 0; i < n; i++) {
+		*this = Backpack(num_items);
+		for (int i = 0; i < num_items; i++) {
 			file >> item_type;
 			if (item_type == "weapon")
 				put_item(new weapon(file));
@@ -54,7 +53,7 @@ std::ofstream& Backpack::save(std::ofstream& ofile) const
 
 Backpack::~Backpack()
 {
-	for (int i = 0; i < Items.size(); i++)
+	for (size_t i = 0; i < Items.size(); i++)
 		delete Items[i];
 }
 
@@ -124,30 +123,23 @@ int Unit::change_HP(int HP)
 	return n;
 }
 
-inline void Unit::change_MP(int use_points) 
-{ 
-	cur_MP -= use_points; 
-}
+inline void Unit::change_MP(int use_points) { cur_MP -= use_points; }
 
-inline bool Unit::check_MP(int MP) const 
-{ 
-	return cur_MP >= MP; 
-}
-
-bool Unit::is_alive() const 
-{ 
-	return cur_HP > 0; 
-}
+inline bool Unit::check_MP(int MP) const { return cur_MP >= MP; }
 
 
 Operative::Operative(const Unit& unit, weapon* g, double ac, int f_w, Backpack&& bp) :
-	Unit(unit), gun(g), accuracy(ac), full_weight(f_w) { backpack = std::move(bp); }
+	Unit(unit), gun(g), accuracy(ac), full_weight(f_w) {
+	backpack = std::move(bp);
+}
 
 Operative::Operative(std::string n, int x, int y, int cur_hp, int hp, int cur_mp, int mp, int r, int move, weapon* g, double ac, int f_w, Backpack&& bp) :
-	Unit(n, x, y, cur_hp, hp, cur_mp, mp, r, move), gun(g), accuracy(ac), full_weight(f_w) { backpack = std::move(bp); }
+	Unit(n, x, y, cur_hp, hp, cur_mp, mp, r, move), gun(g), accuracy(ac), full_weight(f_w) {
+	backpack = std::move(bp);
+}
 
-Operative::Operative(std::ifstream& file) : Unit(file) 
-{ 
+Operative::Operative(std::ifstream& file) : Unit(file)
+{
 	std::string tmp;
 	file >> accuracy >> full_weight >> tmp;
 	if (tmp != "-")
@@ -176,29 +168,31 @@ std::ostream& Operative::display(std::ostream& os) const
 	return os << "Weight: " << backpack.w() << '/' << full_weight << '\n' << "In hands: " << *gun << ", accuracy - " << accuracy << '\n';
 }
 
-bool Operative::attack(Unit* unit)
+const std::string* Operative::attack(Unit* unit)
 {
 	if (check_MP(gun->up())) {
 		double n;
 		if (n = gun->deal_damage()) {
 			change_MP(gun->up());
 			unit->change_HP((int)-(accuracy * n));
-			return true;
+			return msgs;
 		}
+		return msgs + 1;
 	}
-	return false;
+	return msgs + 2;
 }
 
-bool Operative::attack(Cell& cell)
+const std::string* Operative::attack(Cell& cell)
 {
 	if (check_MP(gun->up())) {
 		if (gun->deal_damage()) {
 			change_MP(gun->up());
 			cell.cell_type = '.';
-			return true;
+			return msgs;
 		}
+		return msgs + 1;
 	}
-	return false;
+	return msgs + 2;
 }
 
 std::vector<Item*>* Operative::get_items()
@@ -218,13 +212,13 @@ bool Operative::take_item(Item* item)
 	return false;
 }
 
-bool Operative::use_item(int bind)
+const std::string* Operative::use_item(int bind)
 {
 	Item* item = backpack[bind];
 	if (item) {
 		return item->use(this);
 	}
-	return false;
+	return msgs + 7;
 }
 
 int Operative::load_ammo(int cur_ammo, double ammo_type)
@@ -232,10 +226,10 @@ int Operative::load_ammo(int cur_ammo, double ammo_type)
 	return gun->reload(cur_ammo, ammo_type);
 }
 
-bool Operative::change_weapon(weapon* gun2)
+const std::string* Operative::change_weapon(weapon* gun2)
 {
 	std::swap(*gun, *gun2);
-	return true;
+	return msgs;
 }
 
 
@@ -262,24 +256,24 @@ std::ostream& Alien_melee::display(std::ostream& os) const
 	return os << "weapon parameters: damage - " << damage << ", accuracy - " << accuracy << ", points for attack: " << attack_points << "\n\n";
 }
 
-bool Alien_melee::attack(Unit* unit)
+const std::string* Alien_melee::attack(Unit* unit)
 {
 	if (check_MP(attack_points)) {
 		change_MP(attack_points);
 		unit->change_HP((int)-(accuracy * damage));
-		return true;
+		return msgs;
 	}
-	return false;
+	return msgs + 2;
 }
 
-bool Alien_melee::attack(Cell& cell)
+const std::string* Alien_melee::attack(Cell& cell)
 {
 	if (check_MP(attack_points)) {
 		change_MP(attack_points);
 		cell.cell_type = '.';
-		return true;
+		return msgs;
 	}
-	return false;
+	return msgs + 2;
 }
 
 
@@ -318,29 +312,31 @@ std::ostream& Alien_range::display(std::ostream& os) const
 	return os << "in hands: " << *gun << "In hands: " << *gun << ", accuracy - " << accuracy << "\n\n";
 }
 
-bool Alien_range::attack(Unit* unit)
+const std::string* Alien_range::attack(Unit* unit)
 {
 	if (check_MP(gun->up())) {
 		double n;
 		if (n = gun->deal_damage()) {
 			change_MP(gun->up());
 			unit->change_HP((int)-(accuracy * n));
-			return true;
+			return msgs;
 		}
+		return msgs + 1;
 	}
-	return false;
+	return msgs + 2;
 }
 
-bool Alien_range::attack(Cell& cell)
+const std::string* Alien_range::attack(Cell& cell)
 {
 	if (check_MP(gun->up())) {
 		if (gun->deal_damage()) {
 			change_MP(gun->up());
 			cell.cell_type = '.';
-			return true;
+			return msgs;
 		}
+		return msgs + 1;
 	}
-	return false;
+	return msgs + 2;
 }
 
 
