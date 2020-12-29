@@ -96,8 +96,6 @@ bool GameLevel::add_item(Item* item, int x, int y)
 	return false;
 }
 
-bool GameLevel::add_item(Item* item, const Point& p) { return add_item(item, p.x, p.y); }
-
 bool GameLevel::point_access(int y, int x) const { return point_on_map(y, x) && (Map[y][x].cell_type == '.' || Map[y][x].cell_type == '?'); }
 
 bool  GameLevel::point_on_map(double y, double x) const { return (l > (int)x) && (0 <= x) && (h > (int)y) && (0 <= y); }
@@ -118,7 +116,7 @@ std::vector<std::vector<char>> GameLevel::render_vision(const Unit* unit, const 
 			distance += 1;
 			x = cos(angle) * distance + x0;
 			y = sin(angle) * distance + y0;
-			if (point_on_map((int)y, (int)x)) {
+			if (point_on_map(y, x)) {
 				if (other_unit = Session->unit_here(Point((int)x, (int)y)))
 					if (other_unit->is_alive())
 						vision_circle[(int)y - c.y + nrad][(int)x - c.x + nrad] = other_unit->avatar();
@@ -131,7 +129,10 @@ std::vector<std::vector<char>> GameLevel::render_vision(const Unit* unit, const 
 		angle += increment;
 	} while (angle <= 2 * pi);
 
-	vision_circle[nrad][nrad] = unit->avatar();
+	if (Session->current_unit_is_alive())
+		vision_circle[nrad][nrad] = unit->avatar();
+	else
+		vision_circle[nrad][nrad] = 'x';
 
 	return vision_circle;
 }
@@ -143,7 +144,7 @@ bool GameLevel::is_transparent(double y, double x) const
 }
 
 
-GameSession::GameSession(std::ifstream& file) : con_len(160),  current_mode(mode::game), level(file)
+GameSession::GameSession(std::ifstream& file) : con_len(160), message(close_mods), current_mode(mode::game), level(file)
 {
 	int unit_number;
 	file >> unit_number; file.ignore(1);
@@ -203,14 +204,16 @@ Unit* GameSession::unit_here(const Point& p) const
 void GameSession::move(const Point& next_pos)
 {
 	Unit* unit = unit_here(next_pos);
-	if (level.point_access(next_pos.y, next_pos.x) && ((unit) ? !unit->is_alive() : true)) {
-		if (current_unit->move(next_pos)) {
-			message = "Unit moved.";
-			unit_vision = level.render_vision(current_unit, this);
+	if (current_unit->is_alive())
+		if (level.point_access(next_pos.y, next_pos.x) && ((unit) ? !unit->is_alive() : true)) {
+			if (current_unit->move(next_pos)) {
+				message = msgs;
+				unit_vision = level.render_vision(current_unit, this);
+			}
+			else message = msgs + 2;
 		}
-		else message = "Unit doesnt have enough points.";
-	}
-	else message = "Unit cant move here.";
+		else message = msgs + 8;
+	else message = msgs + 9;
 }
 
 bool GameSession::move_up()
@@ -238,7 +241,6 @@ bool GameSession::choose_next()
 {
 	current_unit_num = (current_unit_num + 1) % player.size();
 	current_unit = player[current_unit_num];
-	message = "Choosed unit: " + current_unit->name_() + ".";
 	unit_vision = level.render_vision(current_unit, this);
 	return true;
 }
@@ -247,7 +249,6 @@ bool GameSession::choose_previous()
 { 
 	current_unit_num = (player.size() + current_unit_num - 1) % player.size();
 	current_unit = player[current_unit_num];
-	message = "Choosed unit: " + current_unit->name_() + ".";
 	unit_vision = level.render_vision(current_unit, this);
 	return true;
 }
@@ -259,25 +260,28 @@ bool GameSession::inventory_init()
 		if (displayed_items) {
 			displayed_items_num = 0;
 			current_mode = mode::inventory;
-			message = "Inventory mode activated.";
+			message = msgs + 10;
 		}
-		else message = "Unit dont have Backpack";
+		else message = msgs + 11;
 	}
-	else message = "Unit is dead.";
+	else message = msgs + 9;
 	return true;
 }
 
 bool GameSession::inventory_drop()
 {
 	Item* item = current_unit->drop_item(displayed_items_num);
-	if (item)
-		level[current_unit->pos()].Items.push_back(item);
+	if (item) {
+		level[current_unit->pos()].add_item(item);
+		message = msgs;
+	}
+	else message = msgs + 7;
 	return true;
 }
 
 bool GameSession::inventory_activate()
 {
-	current_unit->use_item(displayed_items_num);
+	message = current_unit->use_item(displayed_items_num);
 	return true;
 }
 
@@ -288,11 +292,11 @@ bool GameSession::take_init()
 		if ((displayed_items->size() > 0)) {
 			displayed_items_num = 0;
 			current_mode = mode::take;
-			message = "Choose item to take.";
+			message = msgs + 12;
 		}
-		else message = "No items on this cell.";
+		else message = msgs + 13;
 	}
-	else message = "Unit is dead.";
+	else message = msgs + 9;
 	return true;
 }
 
@@ -303,9 +307,9 @@ bool GameSession::take_activate()
 		displayed_items->pop_back();
 		if (displayed_items->size() == 0)
 			level[current_unit->pos()].cell_type = '.';
-		message = "Item taked.";
+		message = msgs;
 	}
-	else message = "Unit cant take this item.";
+	else message = msgs + 14;
 	return true;
 }
 
@@ -315,16 +319,16 @@ bool GameSession::loot_init()
 		Unit* unit = unit_here(current_unit->pos());
 		if (unit) {
 			displayed_items = unit->get_items();
-			if ((displayed_items)) {
+			if (displayed_items) {
 				displayed_items_num = 0;
 				current_mode = mode::take;
-				message = "Choose item to take.";
+				message = msgs + 12;
 			}
-			else message = "Dead unit couldnt have items.";
+			else message = msgs + 13;
 		}
-		else message = "No dead units on this cell.";
+		else message = msgs + 15;
 	}
-	else message = "Unit is dead.";
+	else message = msgs + 9;
 	return true;
 }
 
@@ -332,23 +336,21 @@ bool GameSession::loot_activate()
 {
 	if (current_unit->take_item(displayed_items->at(displayed_items_num))) {
 		displayed_items->at(displayed_items_num) = nullptr;
-		message = "Item taked.";
+		message = msgs;
 	}
-	else message = "Unit cant take this item.";
+	else message = msgs + 14;
 	return true;
 }
 
 bool GameSession::table_choose_up()
 {
 	displayed_items_num = (displayed_items->size() + displayed_items_num - 1) % displayed_items->size();
-	message = "Choosed item number " + std::to_string(displayed_items_num + 1);
 	return true;
 }
 
 bool GameSession::table_choose_down()
 {
 	displayed_items_num = (displayed_items_num + 1) % displayed_items->size();
-	message = "Choosed item number " + std::to_string(displayed_items_num + 1);
 	return true;
 }
 
@@ -358,11 +360,11 @@ bool GameSession::attack_init()
 		if (current_unit->gun_check()) {
 			current_mode = mode::attack;
 			attack_cursor = current_unit->pos();
-			message = "Choose target.";
+			message = msgs + 16;
 		}
-		else message = "Unit dont have weapon.";
+		else message = msgs + 17;
 	}
-	else message = "Unit is dead.";
+	else message = msgs + 9;
 	return true;
 }
 
@@ -411,19 +413,18 @@ bool GameSession::attack_activate()
 		distance += 0.25;
 		x = cos(angle) * distance + x0;
 		y = sin(angle) * distance + y0;
-		if (level.point_on_map((int)y, (int)x)) {
+		if (level.point_on_map(y, x)) {
 			if (other_unit = unit_here(Point((int)x, (int)y))) {
-				current_unit->attack(other_unit);
+				message = current_unit->attack(other_unit);
 				break;
 			}
 			else if (level[Point((int)x, (int)y)].cell_type != '.') {
-				current_unit->attack(level[Point((int)x, (int)y)]);
+				message = current_unit->attack(level[Point((int)x, (int)y)]);
 				break;
 			}
 		}
 	} while ((distance < nrad) && level.point_on_map(y, x));
 	unit_vision = level.render_vision(current_unit, this);
-	message = "Attack executed.";
 	current_mode = mode::game;
 	return true;
 }
@@ -438,21 +439,7 @@ bool GameSession::next_turn()
 
 bool GameSession::close()
 {
-	switch (current_mode)
-	{
-	case mode::inventory:
-		message = "Inventory mode closed.";
-		break;
-	case mode::attack:
-		message = "Attack mode closed.";
-		break;
-	case mode::take:
-		message = "Take mode closed.";
-		break;
-	case mode::loot:
-		message = "Loot mode closed.";
-		break;
-	}
+	message = close_mods + (int)current_mode;
 	current_mode = mode::game;
 	return true;
 }
@@ -483,25 +470,34 @@ void GameSession::draw() const
 
 	switch (current_mode) {
 	case mode::game:
-		cout << "binds: menu - escape; attack - 'a'; inventory - 'i'; take - 't'; next turn - 'n';" << endl
+		cout << "binds: menu - escape; attack - 'a'; inventory - 'i'; take - 't'; loot - 'l' ; next turn - 'n';" << endl
 			<< "       switch units - pageup/pagedown; moving - up/down/right/left arrows." << endl;
 		break;
 	case mode::inventory:
-		cout << "binds: close - escape, 't'; drop - 'd'; activate - enter; switch items - up/down arrows." << endl << endl;
+		cout << "binds: close - escape, 'i'; drop - 'd'; activate - enter; switch items - up/down arrows." << endl << endl;
 		break;
 	case mode::take:
-		cout << "binds: close - escape, 'i'; take - enter; switch items - up/down arrows." << endl << endl;
+		cout << "binds: close - escape, 't'; take - enter; switch items - up/down arrows." << endl << endl;
 		break;
 	case  mode::attack:
 		cout << "binds: close - escape, 'a'; attack - enter; move cursor - up/down/right/left arrows." << endl << endl;
 		break;
 	case mode::loot:
+		cout << "binds: close - escape, 'l'; take - enter; switch items - up/down arrows." << endl << endl;
 		break;
 	}
 	for (int i = 0; i < con_len; i++)
+			cout << '-';
+
+	if ((current_mode == mode::game) || (current_mode == mode::attack))
+		cout << "Choosed unit: " << current_unit->name_() << ", avatar: " << current_unit->avatar() << endl;
+	if ((current_mode == mode::inventory) || (current_mode == mode::loot) || (current_mode == mode::take))
+		cout << "Choosed item number: " << displayed_items_num + 1 << endl;
+
+	for (int i = 0; i < con_len; i++)
 		cout << '-';
 
-	cout << "Result of last action: " << message << endl;
+	cout << "Result of last action: " << *message << endl;
 
 	for (int i = 0; i < con_len; i++)
 		cout << '-';
@@ -552,7 +548,7 @@ std::map<operation_code, bool (GameSession::*)(), CompareType> GameSession::oper
 	{{77, mode::game }, &GameSession::move_right},
 	{{'i', mode::game }, &GameSession::inventory_init},
 	{{'t', mode::game }, &GameSession::take_init},
-	{{'v', mode::game }, &GameSession::loot_init},
+	{{'l', mode::game }, &GameSession::loot_init},
 	{{'a', mode::game }, &GameSession::attack_init},
 	{{'n', mode::game }, &GameSession::next_turn},
 
