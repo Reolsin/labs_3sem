@@ -51,7 +51,7 @@ int weapon::reload(int ammo, double type)
 	return n;
 }
 
-bool weapon::use(Operative* unit)
+const std::string* weapon::use(Operative* unit)
 {
 	return unit->change_weapon(this);
 }
@@ -76,17 +76,20 @@ std::ofstream& aidkit::save(std::ofstream& ofile) const
 	return ofile;
 }
 
-bool aidkit::use(Operative* unit)
+const std::string* aidkit::use(Operative* unit)
 {
 	if (charges) {
-		if (unit->check_MP(up()))
+		if (unit->check_MP(up())) {
 			if (unit->change_HP(heal_amount)) {
 				unit->change_MP(up());
 				charges--;
-				return true;
+				return msgs;
 			}
+			return msgs + 3;
+		}
+		return msgs + 2;
 	}
-	return false;
+	return msgs + 4;
 }
 
 std::ostream& aidkit::display(std::ostream& os) const
@@ -109,18 +112,21 @@ std::ofstream& ammunition::save(std::ofstream& ofile) const
 	return ofile;
 }
 
-bool ammunition::use(Operative* unit)
+const std::string* ammunition::use(Operative* unit)
 {
-	if (cur_count)
+	if (cur_count) {
 		if (unit->check_MP(up())) {
 			int n;
 			if (n = unit->load_ammo(cur_count, ammo_type)) {
 				unit->change_MP(up());
 				cur_count -= n;
-				return true;
+				return msgs;
 			}
+			return msgs + 5;
 		}
-	return false;
+		return msgs + 2;
+	}
+	return msgs + 6;
 }
 
 std::ostream& ammunition::display(std::ostream& os) const
