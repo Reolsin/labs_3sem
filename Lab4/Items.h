@@ -19,7 +19,7 @@ namespace Gamma {
 		inline int up() const { return use_points; }
 		inline int w() const { return weight; }
 
-		virtual bool use(Operative*) = 0;
+		virtual const std::string* use(Operative*) = 0;
 
 		friend std::ofstream& operator<<(std::ofstream& ofile, const Item& item) { return item.save(ofile); }
 		friend std::ostream& operator<<(std::ostream& os, const Item& item) { return item.display(os); }
@@ -43,7 +43,7 @@ namespace Gamma {
 		double deal_damage();
 		int reload(int, double);
 
-		virtual bool use(Operative*);
+		virtual const std::string* use(Operative*);
 	};
 
 
@@ -58,7 +58,7 @@ namespace Gamma {
 		aidkit(std::string n, int w, int up, int cur, int ful, int heal);
 		aidkit(std::ifstream&);
 
-		virtual bool use(Operative*);
+		virtual const std::string* use(Operative*);
 	};
 
 
@@ -74,6 +74,6 @@ namespace Gamma {
 		ammunition(std::string n, int w, int up, int cur, int ful, double a_type);
 		ammunition(std::ifstream&);
 
-		virtual bool use(Operative*);
+		virtual const std::string* use(Operative*);
 	};
 }
