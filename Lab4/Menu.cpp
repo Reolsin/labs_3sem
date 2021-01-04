@@ -1,11 +1,13 @@
 #include <iostream>
-#include <vector>
+#include "../my_vector/My_vector.h"
 #include "conio.h"
 
 
+using My_vect::My_vector;
+
 class Menu {
 	std::string pointer;
-	std::vector<std::string> messages;
+	My_vector<std::string> messages;
 	void show(int pos)
 	{
 		for (int i = 0, n = (60 - messages.size()) / 2; i < n; i++)
@@ -20,7 +22,7 @@ class Menu {
 	}
 
 public:
-	Menu(std::vector<std::string> msgs, std::string p = "<") : \
+	Menu(My_vector<std::string> msgs, std::string p = "<") : \
 		messages(msgs), pointer(p) {}
 
 	int get_recall()
