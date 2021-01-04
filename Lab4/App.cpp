@@ -1,11 +1,12 @@
-#include "Session.h"
+#include "../Operatives_vs_Aliens/Session.h"
 #include "Menu.cpp"
+#include "windows.h"
 
 using namespace Gamma;
 
 void OpenGameField(Gamma::GameSession& Session)
 {
-	int button(0);														
+	int button(0);
 	system("cls");
 	while (Session.execute(button) && Session.check())
 	{
@@ -13,13 +14,13 @@ void OpenGameField(Gamma::GameSession& Session)
 		button = _getch();
 		if (button == 224)
 			button = _getch();
-		Sleep(1000/60);
+		Sleep(1000 / 60);
 	}
 }
 
 std::string get_save_name()
 {
-	std::vector<std::string> saves;
+	My_vector<std::string> saves;
 	std::ifstream s("saves.txt");
 	int n;
 	s >> n; s.ignore(1);
@@ -32,8 +33,10 @@ std::string get_save_name()
 	return saves[load_menu.get_recall()];
 }
 
-const std::vector<std::string> startmenu_msgs = { "New game", "Load game", "Quit" };
-const std::vector<std::string> pausemenu_msgs = { "Continue", "Save game", "Leave w/o saving" };
+const std::vector<std::string> startmenu{ "New game", "Load game", "Quit" };
+const std::vector<std::string> pausemenu{ "Continue", "Save game", "Leave w/o saving" };
+const My_vector<std::string> startmenu_msgs(startmenu);
+const My_vector<std::string> pausemenu_msgs(pausemenu);
 
 int main()
 {
@@ -64,6 +67,6 @@ int main()
 			} while (!pause_menu.is_last(rc2));
 		}
 	} while (!start_menu.is_last(rc1));
-	
+
 	return 0;
 }
