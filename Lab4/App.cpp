@@ -1,5 +1,5 @@
 #include "../Operatives_vs_Aliens/Session.h"
-#include "Menu.cpp"
+#include "Menu.h"
 #include "windows.h"
 
 using namespace Gamma;
