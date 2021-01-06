@@ -8,7 +8,7 @@ using My_vect::My_vector;
 class Menu {
 	std::string pointer;
 	My_vector<std::string> messages;
-	void show(int pos);
+	void show(int);
 
 public:
 	Menu(My_vector<std::string> msgs, std::string p = "<") : \
